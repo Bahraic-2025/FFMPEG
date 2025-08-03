@@ -1,4 +1,4 @@
-name: Build FFmpeg AAR (GPL Minimal, arm64-v8a)
+name: Build FFmpeg AAR (Modified Script)
 on:
   workflow_dispatch:
 jobs:
@@ -36,19 +36,29 @@ jobs:
           echo "LICENSE_ACCEPTED=1" >> $GITHUB_ENV
           echo "ANDROID_GPL_ENABLED=1" >> $GITHUB_ENV
       
-      - name: Build FFmpegKit (GPL + Minimal + arm64-v8a)
+      - name: Modify build script for arm64-v8a only
         run: |
           cd ffmpeg-kit
-          # Try minimal build first to avoid library conflicts
-          export ANDROID_ABI_LIST="arm64-v8a"
-          ./android.sh --enable-gpl --lts
+          cp android.sh android-arm64.sh
+          # Force only arm64-v8a architecture
+          sed -i 's/ANDROID_ARCHS=.*/ANDROID_ARCHS=("arm64-v8a")/' android-arm64.sh
+          # Make it executable
+          chmod +x android-arm64.sh
+      
+      - name: Build FFmpegKit (GPL + arm64-v8a only)
+        run: |
+          cd ffmpeg-kit
+          ./android-arm64.sh --enable-gpl --lts
       
       - name: List built files
         run: |
-          find ffmpeg-kit/prebuilt -name "*.aar" -type f
+          find ffmpeg-kit/prebuilt -name "*arm64*" -type f -ls
       
       - name: Upload AAR
         uses: actions/upload-artifact@v4
         with:
-          name: ffmpeg-kit-gpl-minimal-arm64-v8a
-          path: ffmpeg-kit/prebuilt/android-aar/ffmpeg-kit-*-gpl-*.aar
+          name: ffmpeg-kit-gpl-lts-arm64-v8a-modified
+          path: |
+            ffmpeg-kit/prebuilt/bundle-android-aar/*arm64*.aar
+            ffmpeg-kit/prebuilt/android-aar/*arm64*.aar
+          if-no-files-found: warn
