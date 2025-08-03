@@ -1,4 +1,4 @@
-name: Build FFmpeg AAR (GPL Full, arm64-v8a) - Manual NDK
+name: Build FFmpeg AAR (GPL Minimal, arm64-v8a)
 on:
   workflow_dispatch:
 jobs:
@@ -35,20 +35,20 @@ jobs:
         run: |
           echo "LICENSE_ACCEPTED=1" >> $GITHUB_ENV
           echo "ANDROID_GPL_ENABLED=1" >> $GITHUB_ENV
-          echo "ANDROID_ABI_LIST=arm64-v8a" >> $GITHUB_ENV
       
-      - name: Verify NDK Setup
-        run: |
-          echo "ANDROID_NDK_ROOT is set to: $ANDROID_NDK_ROOT"
-          ls -la $ANDROID_NDK_ROOT
-      
-      - name: Build FFmpegKit (GPL + Full + arm64-v8a)
+      - name: Build FFmpegKit (GPL + Minimal + arm64-v8a)
         run: |
           cd ffmpeg-kit
-          ANDROID_ABI_LIST=arm64-v8a ./android.sh --enable-gpl --full
+          # Try minimal build first to avoid library conflicts
+          export ANDROID_ABI_LIST="arm64-v8a"
+          ./android.sh --enable-gpl --lts
+      
+      - name: List built files
+        run: |
+          find ffmpeg-kit/prebuilt -name "*.aar" -type f
       
       - name: Upload AAR
         uses: actions/upload-artifact@v4
         with:
-          name: ffmpeg-kit-gpl-arm64-v8a
-          path: ffmpeg-kit/prebuilt/android/ffmpeg-kit-gpl-arm64-v8a.aar
+          name: ffmpeg-kit-gpl-minimal-arm64-v8a
+          path: ffmpeg-kit/prebuilt/android-aar/ffmpeg-kit-*-gpl-*.aar
