@@ -34,25 +34,12 @@ jobs:
         run: |
           cd ffmpeg-kit
           ./android.sh \
-            --enable-gpl \
-            --full \
-            --disable-x86 \
-            --disable-x86_64 \
-            --disable-armeabi-v7a \
-            --disable-arm-v7a-neon \
-            --arch=arm64-v8a \
-            --enable-x264 \
-            --enable-x265 \
-            --enable-libvpx \
-            --enable-libopus \
-            --enable-libvorbis \
-            --enable-libwebp \
-            --enable-libmp3lame \
-            --enable-libass \
-            --enable-fribidi \
-            --enable-libaom \
-            --disable-protocols \
-            --disable-network
+           --enable-gpl \
+           --full \
+           --arch=arm64-v8a \
+           --disable-protocols \
+           --disable-network
+
 
       # 5️⃣ Upload final AAR
       - name: Upload AAR
