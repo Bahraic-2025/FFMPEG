@@ -1,8 +1,6 @@
 name: Build FFmpeg AAR (GPL Full, arm64-v8a)
-
 on:
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -12,25 +10,32 @@ jobs:
           git clone --depth=1 https://github.com/arthenica/ffmpeg-kit.git
           cd ffmpeg-kit
           git submodule update --init --recursive
-
+      
       - name: Install dependencies
         run: |
           sudo apt update
           sudo apt install -y autoconf automake build-essential pkg-config \
             cmake yasm nasm python3 python3-pip unzip git wget texinfo \
             libtool libssl-dev zlib1g-dev
-
+      
+      - name: Setup Android NDK
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r25c
+          add-to-path: false
+      
       - name: Accept GPL License
         run: |
           echo "LICENSE_ACCEPTED=1" >> $GITHUB_ENV
           echo "ANDROID_GPL_ENABLED=1" >> $GITHUB_ENV
           echo "ANDROID_ABI_LIST=arm64-v8a" >> $GITHUB_ENV
-
+      
       - name: Build FFmpegKit (GPL + Full + arm64-v8a)
         run: |
           cd ffmpeg-kit
-          ANDROID_ABI_LIST=arm64-v8a ./android.sh --gpl-full
-
+          export ANDROID_NDK_ROOT=${{ steps.setup-ndk.outputs.ndk-path }}
+          ANDROID_ABI_LIST=arm64-v8a ./android.sh --enable-gpl --full
+      
       - name: Upload AAR
         uses: actions/upload-artifact@v4
         with:
